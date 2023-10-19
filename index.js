@@ -1,4 +1,4 @@
-const grafo = require('./grafo1.json');
+const grafo = require('./grafos/grafo1.json');
 const seleccion = require('./seleccion.js');
 const cruzamiento = require('./cruzamiento.js');
 
@@ -17,7 +17,7 @@ console.log(pesoMaximo);
 function aptitud(cromosoma) {
   const individuo = grafo.filter((_, index) => cromosoma[index]);
   const puntaje = esRecorridoValido(individuo) ? 2000 - 1000 * individuo.reduce((acum, actual) => acum + pesoCamino(actual), 0) / pesoMaximo : 200 - 200 * penalizacion(individuo) / penalizacionMaxima;
-  console.log(`#${iteraciones}, cromosoma: ${hacerChiquito(cromosoma)}, puntaje: ${puntaje}, caminos: ${traducirCromosoma(cromosoma)}`);
+  console.log(`#${iteraciones}, cromosoma: ${arrayAString(cromosoma)}, puntaje: ${puntaje}, caminos: ${traducirCromosoma(cromosoma)}`);
   return puntaje
 }
 
@@ -68,7 +68,7 @@ let poblacion = [];
 const cantIndividuos = 1200;
 const cantSeleccionados = cantIndividuos / 2;
 const aptitudCorte = 1000;
-const probabilidadMutacion = 0.2;
+const probabilidadMutacion = 0.8;
 
 function main() {
   generacionInicial();
@@ -101,14 +101,14 @@ function generacionInicial() {
 }
 
 function seleccionar() {
-  //return seleccion.ranking(poblacion, cantSeleccionados, aptitud);
+  // return seleccion.ranking(poblacion, cantSeleccionados, aptitud);
   return seleccion.ruleta(poblacion, cantSeleccionados, aptitud);
 }
 
 function cruzar(seleccionados) {
   const cruzados = [];
   
-  console.log('seleccionados: ' + hacerChiquito(seleccionados))
+  // console.log('seleccionados: ' + arrayAString(seleccionados))
   const parejas = [];
   while (parejas.length < cantIndividuos / 2) {
     const i = Math.round(Math.random() * (seleccionados.length - 1));
@@ -138,7 +138,7 @@ function corte() {
     console.log('Mejor: ' + traducirCromosoma(mejor));
     console.log('Aptitud: ', aptitud(mejor))
   }
-  return /*!!mejor*/ iteraciones > 100;
+  return /*!!mejor*/ iteraciones >= 15;
 }
 
 function poblacionFinal() {}
@@ -153,12 +153,12 @@ function traducirCromosoma(cromosoma) {
 
 // Debug
 
-function hacerChiquito(individuo) {
+function arrayAString(individuo) {
   return individuo.reduce((acum, e) =>  '' + acum + '.' + e, '').substring(1);
 }
 
 function logPoblacion() {
   poblacion.forEach((individuo, index) => {
-    console.log(index + ': ' + hacerChiquito(individuo) + ', iteracion: ', iteraciones);
+    console.log(index + ': ' + arrayAString(individuo) + ', iteracion: ', iteraciones);
   })
 }
