@@ -1,0 +1,68 @@
+[
+  {
+    "extremo1": "A",
+    "extremo2": "B",
+    "distancia": 20,
+    "trafico": 1
+  },
+  {
+    "extremo1": "A",
+    "extremo2": "C",
+    "distancia": 10,
+    "trafico": 1.3
+  },
+  {
+    "extremo1": "B",
+    "extremo2": "E",
+    "distancia": 5,
+    "trafico": 1.2
+  },
+  {
+    "extremo1": "C",
+    "extremo2": "D",
+    "distancia": 10,
+    "trafico": 2
+  },
+  {
+    "extremo1": "D",
+    "extremo2": "E",
+    "distancia": 50,
+    "trafico": 1
+  },
+  {
+    "extremo1": "D",
+    "extremo2": "F",
+    "distancia": 10,
+    "trafico": 1.6
+  },
+  {
+    "extremo1": "E",
+    "extremo2": "F",
+    "distancia": 20,
+    "trafico": 1.4
+  },
+  {
+    "extremo1": "E",
+    "extremo2": "G",
+    "distancia": 10,
+    "trafico": 1.8
+  },
+  {
+    "extremo1": "F",
+    "extremo2": "G",
+    "distancia": 30,
+    "trafico": 1.5
+  },
+  {
+    "extremo1": "F",
+    "extremo2": "H",
+    "distancia": 10,
+    "trafico": 1.2
+  },
+  {
+    "extremo1": "G",
+    "extremo2": "H",
+    "distancia": 10,
+    "trafico": 1.1
+  }
+]
