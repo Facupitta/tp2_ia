@@ -8,9 +8,16 @@ const nodoFinal = 'H';
 // El cromosoma de un individuo tiene "grafo.length" elementos
 // Es un array del estilo [0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0]
 // Un individuo es un recorrido subconjunto del grafo
+// Los caminos validos valen mas de 1000 (para que tengan mas chance en ruleta), y los invalidos entre 0 y 200
 function aptitud(cromosoma) {
   const individuo = grafo.filter((_, index) => cromosoma[index]);
-  return esIndividuoValido(individuo) ? individuo.reduce((acum, actual) => acum + puntajeCamino(actual), 100) : -9999999;
+  const puntaje = esIndividuoValido(individuo) ? 1000 + 1 / individuo.reduce((acum, actual) => acum + pesoCamino(actual), 0) : 200 - penalizacion(individuo);
+  console.log(`#${iteraciones}, cromosoma: ${hacerChiquito(cromosoma)}, puntaje: ${puntaje}, caminos: ${traducirCromosoma(cromosoma)}`);
+  return puntaje
+}
+
+function esIndividuoValido(recorrido) {
+  return tieneInicio(recorrido) && tieneFinal(recorrido) && esLineal(recorrido);
 }
 
 function esIndividuoValido(recorrido) {
@@ -26,16 +33,27 @@ function tieneFinal(recorrido) {
 }
 
 function esLineal(recorrido) {
-  const nodosActuales = nodos(recorrido); 
+  const nodosActuales = nodos(recorrido);
   return nodosActuales.every(nodo => nodosActuales.filter(nodo2 => nodo2 === nodo).length === ([nodoInicial, nodoFinal].includes(nodo) ? 1 : 2));
+}
+
+function penalizacion(recorrido) {
+  const puntos = nodos(recorrido);
+  const sinRepetidos = puntos.filter((nodo, index) => puntos.indexOf(nodo) === index);
+  // Le sumo 1 por aparicion incorrecta de cada nodo (si es un extremo deberia aparecer 1 sola vez, si es intermedio 2)
+  let ret = sinRepetidos.reduce((acum, nodo) => acum + Math.abs(([nodoInicial, nodoFinal].includes(nodo) ? 1 : 2) - puntos.filter(nodo2 => nodo === nodo2).length), 0);
+  // Le sumo 5 por cada extremo que falte
+  ret += 10 - 5 * sinRepetidos.filter(nodo => nodo === nodoInicial || nodo === nodoFinal).length;
+  
+  return ret;
 }
 
 function nodos(recorrido) {
   return recorrido.flatMap(camino => [camino.extremo1, camino.extremo2]);
 }
 
-function puntajeCamino(camino) {
-  return -(camino.distancia * camino.trafico);
+function pesoCamino(camino) {
+  return camino.distancia * camino.trafico;
 }
 
 
@@ -46,7 +64,7 @@ let iteraciones = 0;
 let poblacion = [];
 const cantIndividuos = 120;
 const cantSeleccionados = cantIndividuos / 2;
-const aptitudCorte = 30;
+const aptitudCorte = 1000;
 const probabilidadMutacion = 0.2;
 
 function main() {
@@ -65,6 +83,32 @@ function main() {
   poblacionFinal();
 }
 
+function test() {
+  generacionInicial();
+  poblacion.forEach(e => {
+    console.log('individuo: ', traducirCromosoma(e));
+
+    const individuo = grafo.filter((_, index) => e[index]);
+    console.log('cortes: ' + penalizacion(individuo));
+  })
+}
+
+function test2() {
+  //const cromosoma = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const cromosoma = [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1];
+  const recorrido = grafo.filter((_, index) => cromosoma[index]);
+
+  console.log(recorrido)
+  console.log('aptitud: ' + aptitud(cromosoma));
+  console.log('cortes: ' + penalizacion(recorrido));
+}
+
+main();
+//test();
+//test2()
+
+
+
 // Generar la poblacion inicial
 // 1) Al azar: generar todo random (puede haber invalidos)
 // 2) Ad-hoc: generar x individuos validos armados por mi
@@ -75,16 +119,13 @@ function generacionInicial() {
   }
 }
 
-main();
-
 function seleccionar() {
-  return seleccion.ranking(poblacion, cantSeleccionados, aptitud);
+  //return seleccion.ranking(poblacion, cantSeleccionados, aptitud);
+  return seleccion.ruleta(poblacion, cantSeleccionados, aptitud);
 }
 
 function cruzar(seleccionados) {
   const cruzados = [];
-
-  logPoblacion();
   
   console.log('seleccionados: ' + hacerChiquito(seleccionados))
   const parejas = [];
@@ -96,33 +137,7 @@ function cruzar(seleccionados) {
 
   cruzados.push(parejas.flatMap(pareja => cruzamiento.cruzaBinomial(pareja, 'XYXYXYXYXYX')));
 
-
-  /*  
-  for (let j = 0; j < cantIndividuos / seleccionados.length; j++) {
-    const seleccionadosMezclados = seleccionados.sort(() => Math.random() - 0.5);
-    console.log('seleccionados mezclados con j = ' + j + ': ' + hacerChiquito(seleccionadosMezclados))
-    const parejas = [];
-  
-    for (let i = 0; i < seleccionadosMezclados.length; i += 2) {
-      parejas.push([poblacion[seleccionadosMezclados[i]], poblacion[seleccionadosMezclados[i + 1]]]);
-    }
-
-    cruzados.push(parejas.flatMap(pareja => cruzamiento.cruzaSimple(pareja, Math.random() * grafo.length)));
-  }
-  */
-
   poblacion = cruzados.flat();
-
-  logPoblacion();
-
-  // const cruzados = parejas.flatMap(pareja => cruzamiento.cruzaMascaraDoble(pareja, 'XXYYXXYYXXY', 'XXXXYYYYXXX'));
-
-  // Actualizo la poblacion
-  /*
-  for (i in cruzados) {
-    poblacion[seleccionadosMezclados[i]] = cruzados[i];
-  }
-  */
 
 }
 
@@ -139,29 +154,30 @@ function mutacion() {
 function corte() {
   const mejor = poblacion.filter(individuo => aptitud(individuo) > aptitudCorte)[0];
   if (mejor) {
-    console.log('Mejor: ', traducirIndividuo(mejor));
+    console.log('Mejor: ' + traducirCromosoma(mejor));
     console.log('Aptitud: ', aptitud(mejor))
   }
-  return !!mejor;
+  return /*!!mejor*/ iteraciones > 999;
 }
 
 function poblacionFinal() {}
 
 
-function traducirIndividuo(individuo) {
-  return grafo.filter((_, index) => individuo[index])
-    .map(camino => `${camino.extremo1} <-> ${camino.extremo2}`);
+function traducirCromosoma(cromosoma) {
+  return grafo.filter((_, index) => cromosoma[index])
+    .reduce((acum, camino) => `${acum}, ${camino.extremo1} <-> ${camino.extremo2}`, '')
+    .substring(2);
 }
 
 
 // Debug
 
 function hacerChiquito(individuo) {
-  return individuo.reduce((acum, e) => '' + acum + e, '');
+  return individuo.reduce((acum, e) =>  '' + acum + '.' + e, '').substring(1);
 }
 
 function logPoblacion() {
   poblacion.forEach((individuo, index) => {
-    console.log(index + ': ' + hacerChiquito(individuo));
+    console.log(index + ': ' + hacerChiquito(individuo) + ', iteracion: ', iteraciones);
   })
 }
