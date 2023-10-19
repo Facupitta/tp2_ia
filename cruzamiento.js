@@ -1,14 +1,6 @@
 function cruzaSimple(pareja, ptoCorte) {
-  const padreA = pareja[0];
-  const padreB = pareja[1];
-
-  const hijoA = [...padreA.slice(0, ptoCorte), ...padreB.slice(ptoCorte)];
-  const hijoB = [...padreB.slice(0, ptoCorte), ...padreA.slice(ptoCorte)];
-
-  return [
-    hijoA,
-    hijoB
-  ];
+  const mascara = pareja[0].map((_, index) => index < ptoCorte ? 'X' : 'Y').join('');
+  return cruzaBinomial(pareja, mascara);
 }
 
 // mascara ej: 'XXYYXYXXYXY'
