@@ -17,7 +17,7 @@ console.log(pesoMaximo);
 function aptitud(cromosoma) {
   const individuo = grafo.filter((_, index) => cromosoma[index]);
   const puntaje = esRecorridoValido(individuo) ? 2000 - 1000 * individuo.reduce((acum, actual) => acum + pesoCamino(actual), 0) / pesoMaximo : 200 - 200 * penalizacion(individuo) / penalizacionMaxima;
-  console.log(`#${iteraciones}, cromosoma: ${arrayAString(cromosoma)}, puntaje: ${puntaje}, caminos: ${traducirCromosoma(cromosoma)}`);
+  // console.log(`#${iteraciones}, cromosoma: ${arrayAString(cromosoma)}, puntaje: ${puntaje}, caminos: ${traducirCromosoma(cromosoma)}`);
   return puntaje
 }
 
@@ -77,12 +77,13 @@ function main() {
     const seleccionados = seleccionar();
     cruzar(seleccionados);
     mutacion();
+
+    console.log(`#${iteraciones} | ${promedioAptitud()}`);
     
     iteraciones++;
   }
-  console.log('Iteraciones: ' + iteraciones);
-  console.log('Poblacion: ' + poblacion.length);
-  poblacionFinal();
+
+  console.log('Mejor individuo: ' + JSON.stringify(mejorIndividuoPoblacion()));
 }
 
 
@@ -90,11 +91,8 @@ main();
 
 
 
-// Generar la poblacion inicial
-// 1) Al azar: generar todo random (puede haber invalidos)
-// 2) Ad-hoc: generar x individuos validos armados por mi
+// Generar la poblacion inicial al azar
 function generacionInicial() {
-  // al azar
   for (let i = 0; i < cantIndividuos; i++) {
     poblacion.push(grafo.map(() => Math.random() > 0.5 ? 1 : 0));
   }
@@ -135,14 +133,11 @@ function mutacion() {
 function corte() {
   const mejor = poblacion.filter(individuo => aptitud(individuo) > aptitudCorte)[0];
   if (mejor) {
-    console.log('Mejor: ' + traducirCromosoma(mejor));
-    console.log('Aptitud: ', aptitud(mejor))
+    // console.log('Mejor: ' + traducirCromosoma(mejor));
+    // console.log('Aptitud: ', aptitud(mejor))
   }
   return /*!!mejor*/ iteraciones >= 15;
 }
-
-function poblacionFinal() {}
-
 
 function traducirCromosoma(cromosoma) {
   return grafo.filter((_, index) => cromosoma[index])
@@ -150,6 +145,19 @@ function traducirCromosoma(cromosoma) {
     .substring(2);
 }
 
+function promedioAptitud() {
+  return ('' + poblacion.reduce((acum, i) => acum + aptitud(i), 0) / poblacion.length).replace('.', ',');
+}
+
+function mejorIndividuoPoblacion() {
+  return poblacion.map(cromosoma => ({
+    cromosoma,
+    aptitud: aptitud(cromosoma),
+    interpretacion: traducirCromosoma(cromosoma)
+  }))
+    .sort((a, b) => aptitud(b) - aptitud(a))
+    [0]
+}
 
 // Debug
 
