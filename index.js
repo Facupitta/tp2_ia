@@ -17,7 +17,6 @@ console.log(pesoMaximo);
 function aptitud(cromosoma) {
   const individuo = grafo.filter((_, index) => cromosoma[index]);
   const puntaje = esRecorridoValido(individuo) ? 2000 - 1000 * individuo.reduce((acum, actual) => acum + pesoCamino(actual), 0) / pesoMaximo : 200 - 200 * penalizacion(individuo) / penalizacionMaxima;
-  // console.log(`#${iteraciones}, cromosoma: ${arrayAString(cromosoma)}, puntaje: ${puntaje}, caminos: ${traducirCromosoma(cromosoma)}`);
   return puntaje
 }
 
@@ -67,7 +66,6 @@ let poblacion = [];
 // Parámetros
 const cantIndividuos = 1200;
 const cantSeleccionados = cantIndividuos / 2;
-const aptitudCorte = 1000;
 const probabilidadMutacion = 0.8;
 
 function main() {
@@ -106,7 +104,6 @@ function seleccionar() {
 function cruzar(seleccionados) {
   const cruzados = [];
   
-  // console.log('seleccionados: ' + arrayAString(seleccionados))
   const parejas = [];
   while (parejas.length < cantIndividuos / 2) {
     const i = Math.round(Math.random() * (seleccionados.length - 1));
@@ -114,7 +111,9 @@ function cruzar(seleccionados) {
     parejas.push([poblacion[seleccionados[i]], poblacion[seleccionados[j]]]);
   }
 
-  cruzados.push(parejas.flatMap(pareja => cruzamiento.cruzaBinomial(pareja, 'XYXYXYXYXYX')));
+  // cruzados.push(parejas.flatMap(pareja => cruzamiento.cruzaSimple(pareja, 5)));
+  // cruzados.push(parejas.flatMap(pareja => cruzamiento.cruzaBinomial(pareja, 'XYXYXYXYXYX')));
+  cruzados.push(parejas.flatMap(pareja => cruzamiento.cruzaMascaraDoble(pareja, 'XXYYXXYYXYX', 'YYYXXXYYYXY')));
 
   poblacion = cruzados.flat();
 
@@ -131,12 +130,7 @@ function mutacion() {
 }
 
 function corte() {
-  const mejor = poblacion.filter(individuo => aptitud(individuo) > aptitudCorte)[0];
-  if (mejor) {
-    // console.log('Mejor: ' + traducirCromosoma(mejor));
-    // console.log('Aptitud: ', aptitud(mejor))
-  }
-  return /*!!mejor*/ iteraciones >= 15;
+  return iteraciones >= 15;
 }
 
 function traducirCromosoma(cromosoma) {
@@ -157,16 +151,4 @@ function mejorIndividuoPoblacion() {
   }))
     .sort((a, b) => aptitud(b) - aptitud(a))
     [0]
-}
-
-// Debug
-
-function arrayAString(individuo) {
-  return individuo.reduce((acum, e) =>  '' + acum + '.' + e, '').substring(1);
-}
-
-function logPoblacion() {
-  poblacion.forEach((individuo, index) => {
-    console.log(index + ': ' + arrayAString(individuo) + ', iteracion: ', iteraciones);
-  })
 }
